@@ -19,4 +19,4 @@ with col2:
     sales_b = st.number_input("Company B Sales Volume", min_value=0, value=900)
 
 with col3:
-    price_c_markup = st.number_input("Company C Price Markup_
+    price_c_markup = st.number_input("Company C Price Markup (%)", min_value=0.0, max_value=100.0, value=5.0)
