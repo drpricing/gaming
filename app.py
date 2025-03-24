@@ -21,21 +21,34 @@ if base_sales_a <= 0:
 # Number of customers
 num_customers = 10
 
-# Simulate customer reactions based on price
-def calculate_customer_sales(price_a, base_sales_a, num_customers):
-    # Elasticity factor (simple model: 1% price increase -> 2% decrease in demand)
-    elasticity_factor = 0.02
+# User input for elasticity and variability
+st.header("Elasticity & Customer Sensitivity")
+elasticity_factor = st.slider("Elasticity Factor (Sensitivity to price change)", min_value=0.01, max_value=0.5, value=0.02, step=0.01)
+random_variability = st.slider("Random Demand Variability (%)", min_value=0, max_value=20, value=10)  # Random variability slider
+
+# Simulate customer reactions based on price and elasticity
+def calculate_customer_sales(price_a, base_sales_a, num_customers, elasticity_factor, random_variability):
     sales = []
     
     for i in range(num_customers):
         # Customer demand decreases with price increase (elasticity model)
         customer_demand = base_sales_a * (1 - elasticity_factor * (price_a - 100) / 100)
-        sales.append(max(0, customer_demand))  # Prevent negative sales
+        
+        # Add random variability: apply a random factor based on the variability slider
+        random_factor = np.random.uniform(1 - random_variability / 100, 1 + random_variability / 100)
+        customer_demand *= random_factor
+        
+        # Apply customer segmentation
+        if i < num_customers // 2:  # Half of customers are price-sensitive
+            customer_demand *= (1 - 0.2 * (price_a - 100) / 100)  # Stronger elasticity for sensitive customers
+        
+        # Ensure demand doesn't go below 0
+        sales.append(max(0, customer_demand))
 
     return sales
 
 # Calculate customer sales at the current price point
-sales_a = calculate_customer_sales(price_a, base_sales_a, num_customers)
+sales_a = calculate_customer_sales(price_a, base_sales_a, num_customers, elasticity_factor, random_variability)
 
 # Total sales volume for Company A
 total_sales_a = sum(sales_a)
@@ -59,7 +72,7 @@ sales_a_prices = []
 
 for p in price_range:
     # Get new customer sales at different price points
-    sales_a_new = calculate_customer_sales(p, base_sales_a, num_customers)
+    sales_a_new = calculate_customer_sales(p, base_sales_a, num_customers, elasticity_factor, random_variability)
     total_sales_a_new = sum(sales_a_new)
     
     # Calculate revenue and profit for Company A at this price point
